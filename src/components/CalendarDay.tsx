@@ -30,7 +30,7 @@ const handleOverlap = (events: Event[]) => {
       if (ev === ev2 || startEnd > 0) {
         continue;
       } else if (startEnd < 0 && startStart > 0) {
-        ev.left++;
+        ev.left = (ev2.left || 0) + 1;
       }
     }
   }
@@ -45,6 +45,7 @@ export default ({
   events: Event[];
   createEvent: (ev: Event) => void;
 }) => {
+  console.log("RENDER");
   handleOverlap(events);
   const [dummy, setDummy] = useState({});
   const data = useRef(generateData(date));
@@ -55,11 +56,7 @@ export default ({
       <div className="day__body" ref={day}>
         {day.current
           ? events.map((ev) => (
-              <EventComp
-                {...ev}
-                // @ts-ignore
-                startX={day.current.getBoundingClientRect().clientX}
-              />
+              <EventComp refreshParent={setDummy} ev={ev} {...ev} />
             ))
           : (() => {
               setTimeout(() => {
@@ -70,7 +67,7 @@ export default ({
           <div className="hour">
             <div className="hour__label">{h}</div>
             <div className="hour__body">
-              {qs.map(({ date: qDate }) => {
+              {qs.map(({ date: qDate }, i) => {
                 return (
                   <div
                     onClick={() => {
@@ -83,6 +80,9 @@ export default ({
                       });
                     }}
                     className="quarter"
+                    {...(i === 3
+                      ? { style: { height: `${QUARTER_HEIGHT - 1}px` } }
+                      : {})}
                   ></div>
                 );
               })}
