@@ -1,5 +1,5 @@
 import React, { useState, useCallback, ReactElement, useEffect } from "react";
-import { Select, Card, DatePicker, Calendar, Button, Badge } from "antd";
+import { Select, Card, Calendar, Button, Badge } from "antd";
 import moment, { Moment } from "moment";
 import { PlusOutlined, RightOutlined, LeftOutlined } from "@ant-design/icons";
 import { Event } from "./types";
@@ -138,13 +138,13 @@ export default ({
       window.removeEventListener("resize", list);
     };
   }, []);
-  const [events, setEvents] = useState<Event[]>(iEvents);
-  const createEvent = useCallback(
-    (ev: Event) => {
-      setEvents([...events, ev]);
-    },
-    [events]
-  );
+  const [events] = useState<Event[]>(iEvents);
+  // const createEvent = useCallback(
+  //   (ev: Event) => {
+  //     setEvents([...events, ev]);
+  //   },
+  //   [events]
+  // );
   const [mode, setMode] = useState<CalendarModes>(CalendarModes.Day);
   const [date, setDate] = useState<Moment>(moment());
   return (

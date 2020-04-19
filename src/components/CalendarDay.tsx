@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Moment } from "moment";
 import EventComp from "./Event";
 import { Event } from "./types";
@@ -45,9 +45,8 @@ export default ({
   events: Event[];
   createEvent: (ev: Event) => void;
 }) => {
-  console.log("RENDER");
   handleOverlap(events);
-  const [dummy, setDummy] = useState({});
+  const [_, setDummy] = useState({});
   const data = useRef(generateData(date));
   const day = useRef(null);
   return (

@@ -36,6 +36,7 @@ export default ({
     <ClickAway onClickAway={() => setFocused(false)}>
       <Draggable
         disabled={resizing}
+        // @ts-ignore
         bounds={{ top: 0, bottom: 24 * 4 * QUARTER_HEIGHT - height }}
         axis="y"
         grid={[QUARTER_HEIGHT, QUARTER_HEIGHT]}
