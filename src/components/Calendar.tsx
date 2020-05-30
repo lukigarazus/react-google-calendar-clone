@@ -1,10 +1,11 @@
-import React, { useState, useCallback, ReactElement, useEffect } from "react";
+import React, { useState, ReactElement, useEffect } from "react";
 import { Select, Card, Calendar, Button, Badge } from "antd";
 import moment, { Moment } from "moment";
 import { PlusOutlined, RightOutlined, LeftOutlined } from "@ant-design/icons";
 import { Event } from "../types";
 import Day from "./CalendarDay";
 import { date as D, dom as DOM } from "../util";
+import CreateEventModal from "./CreateEventModal";
 import "antd/dist/antd.css";
 
 enum CalendarModes {
@@ -45,48 +46,78 @@ const SideCalendarHeader = ({
   );
 };
 
-const Sider = ({ date, onChange }: { date: Moment; onChange: any }) => {
+const CREATE_BUTTON_STYLE = {
+  borderRadius: "50px",
+  boxShadow: `0 5px 5px -3px rgba(0,0,0,0.2)`,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "48px",
+  width: "120px",
+};
+
+const Sider = ({
+  date,
+  onChange,
+  createEvent,
+}: {
+  date: Moment;
+  onChange: any;
+  createEvent: (ev: Event) => void;
+}) => {
+  const [creating, setCreating] = useState(false);
   return (
-    <div
-      style={{
-        width: "300px",
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <>
+      <CreateEventModal
+        visible={creating}
+        setVisible={setCreating}
+        date={date}
+        key={`${creating}`}
+        createEvent={createEvent}
+      />
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
+          width: "300px",
           padding: "20px",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Button
+        <div
           style={{
-            borderRadius: "50px",
-            boxShadow: `0 5px 5px -3px rgba(0,0,0,0.2)`,
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            height: "48px",
-            width: "120px",
+            padding: "20px",
           }}
         >
-          <PlusOutlined
-            className="create-button"
-            style={{ fontSize: "25px" }}
-          />
-          <span>Create</span>
-        </Button>
+          <Button
+            style={CREATE_BUTTON_STYLE}
+            onClick={() => {
+              setCreating(true);
+              // createEvent({
+              //   start: now,
+              //   end: now.clone().add(15, "m"),
+              //   title: "Event",
+              //   quarters: [],
+              //   diff: 0,
+              // });
+            }}
+          >
+            <PlusOutlined
+              className="create-button"
+              style={{ fontSize: "25px" }}
+            />
+            <span>Create</span>
+          </Button>
+        </div>
+        <Calendar
+          value={date}
+          onChange={onChange}
+          fullscreen={false}
+          headerRender={SideCalendarHeader}
+        />
       </div>
-      <Calendar
-        value={date}
-        onChange={onChange}
-        fullscreen={false}
-        headerRender={SideCalendarHeader}
-      />
-    </div>
+    </>
   );
 };
 
@@ -122,11 +153,13 @@ const Mode = ({
 };
 
 export default ({
-  title,
-  events: iEvents = [],
+  title = "Calendar",
+  events,
+  createEvent,
 }: {
-  title: string;
-  events?: Event[];
+  title?: string;
+  events: Event[];
+  createEvent: (ev: Event) => void;
 }) => {
   const [windowSize, setWindowSize] = useState(DOM.viewport());
   useEffect(() => {
@@ -138,7 +171,6 @@ export default ({
       window.removeEventListener("resize", list);
     };
   }, []);
-  const [events] = useState<Event[]>(iEvents);
   // const createEvent = useCallback(
   //   (ev: Event) => {
   //     setEvents([...events, ev]);
@@ -178,6 +210,7 @@ export default ({
                     onChange={(v: Moment) => {
                       setDate(v);
                     }}
+                    createEvent={createEvent}
                   />
                 ),
                 Body: (
@@ -188,7 +221,7 @@ export default ({
                         ev.start.format("DD/MM/YYYY") ===
                         date.format("DD/MM/YYYY")
                     )}
-                    createEvent={() => {}}
+                    createEvent={createEvent}
                   />
                 ),
               },
@@ -199,6 +232,7 @@ export default ({
                     onChange={(v: Moment) => {
                       setDate(v);
                     }}
+                    createEvent={createEvent}
                   />
                 ),
                 Body: (
@@ -231,6 +265,7 @@ export default ({
                     onChange={(v: Moment) => {
                       setDate(v);
                     }}
+                    createEvent={createEvent}
                   />
                 ),
                 Body: (

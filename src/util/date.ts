@@ -8,13 +8,26 @@ export interface SetConfig {
   h?: number;
   m?: number;
   s?: number;
+  y?: number;
+  mo?: number;
+  d?: number;
 }
 
-export const set = (d: Moment, { h = 0, m = 0, s = 0 }: SetConfig) => {
+const CONFIG_MAP = {
+  h: "hours",
+  m: "minutes",
+  s: "seconds",
+  y: "years",
+  mo: "months",
+  d: "date",
+};
+
+export const set = (d: Moment, config: SetConfig) => {
   const c = d.clone();
-  c.hours(h);
-  c.minutes(m);
-  c.seconds(s);
+  Object.keys(config).forEach((k) => {
+    // @ts-ignore
+    c[CONFIG_MAP[k]](config[k]);
+  });
   return c;
 };
 

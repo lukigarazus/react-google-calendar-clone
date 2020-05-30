@@ -5,7 +5,7 @@ import { Event } from "../types";
 import { QUARTER_HEIGHT } from "../constants";
 import { date as D } from "../util";
 import {
-  mapOverlap,
+  // mapOverlap,
   generateData,
   getStartAndEnd,
   handleOverlap,
@@ -34,7 +34,6 @@ export default ({
           ? [...events].map((ev: Event) => (
               <EventComp
                 // data={overlapData || []}
-                events={events}
                 refreshParent={setDummy}
                 ev={ev}
                 {...ev}
