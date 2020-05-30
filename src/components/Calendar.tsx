@@ -2,7 +2,7 @@ import React, { useState, useCallback, ReactElement, useEffect } from "react";
 import { Select, Card, Calendar, Button, Badge } from "antd";
 import moment, { Moment } from "moment";
 import { PlusOutlined, RightOutlined, LeftOutlined } from "@ant-design/icons";
-import { Event } from "./types";
+import { Event } from "../types";
 import Day from "./CalendarDay";
 import { date as D, dom as DOM } from "../util";
 import "antd/dist/antd.css";

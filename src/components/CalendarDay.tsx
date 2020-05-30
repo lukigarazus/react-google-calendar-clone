@@ -1,40 +1,15 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Moment } from "moment";
 import EventComp from "./Event";
-import { Event } from "./types";
-import { QUARTER_HEIGHT, DEFAULT_INTERVAL } from "./constants";
-import { date as D, array as A } from "../util/index";
-
-const getStartAndEnd = (d: Moment) => {
-  const start = d;
-  const end = start.clone().add(...DEFAULT_INTERVAL);
-  return { start, end };
-};
-
-const generateData = (date: Moment) => {
-  return A.range(0, 24).map((h) => ({
-    h,
-    qs: A.range(0, 4).map((q) => ({ date: D.set(date, { h, m: q * 15 }) })),
-  }));
-};
-
-const handleOverlap = (events: Event[]) => {
-  const byStart = [...events].sort((a, b) => a.start.diff(b.start));
-  const byEnd = [...events].sort((a, b) => a.end.diff(b.end));
-  for (let ev of byStart) {
-    ev.left = 0;
-    for (let ev2 of byEnd) {
-      const startEnd = ev.start.diff(ev2.end);
-      const startStart = ev.start.diff(ev2.start);
-      console.log(ev.title, ev2.title, startEnd, startStart);
-      if (ev === ev2 || startEnd > 0) {
-        continue;
-      } else if (startEnd < 0 && startStart > 0) {
-        ev.left = (ev2.left || 0) + 1;
-      }
-    }
-  }
-};
+import { Event } from "../types";
+import { QUARTER_HEIGHT } from "../constants";
+import { date as D } from "../util";
+import {
+  mapOverlap,
+  generateData,
+  getStartAndEnd,
+  handleOverlap,
+} from "../util/event";
 
 export default ({
   date,
@@ -45,17 +20,25 @@ export default ({
   events: Event[];
   createEvent: (ev: Event) => void;
 }) => {
+  // @ts-ignore
   handleOverlap(events);
+  // const [overlapData, setOverlapData] = useState(mapOverlap(events));
   const [_, setDummy] = useState({});
-  const data = useRef(generateData(date));
+  const data = useRef(generateData());
   const day = useRef(null);
   return (
     <div className="day">
       <h3>{D.getStringDate(date)}</h3>
       <div className="day__body" ref={day}>
         {day.current
-          ? events.map((ev) => (
-              <EventComp refreshParent={setDummy} ev={ev} {...ev} />
+          ? [...events].map((ev: Event) => (
+              <EventComp
+                // data={overlapData || []}
+                events={events}
+                refreshParent={setDummy}
+                ev={ev}
+                {...ev}
+              />
             ))
           : (() => {
               setTimeout(() => {
@@ -76,6 +59,7 @@ export default ({
                         start,
                         end,
                         diff: Math.abs(start.diff(end)),
+                        quarters: [],
                       });
                     }}
                     className="quarter"

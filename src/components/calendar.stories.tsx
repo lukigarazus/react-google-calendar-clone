@@ -1,7 +1,7 @@
 import React from "react";
 import Calendar from "./Calendar";
 import moment from "moment";
-import { Event } from "./types";
+import { Event } from "../types";
 import { array as A, math as M, date as D } from "../util";
 
 export default {
@@ -12,10 +12,10 @@ const events: Event[] = A.range(0, 6).map((el) => {
   const h = M.getRandomArbitrary(0, 19);
   let m = M.getRandomArbitrary(0, 59);
   m -= m % 15;
-  start = D.set(start, { h, m });
+  start = D.set(start, { h, m, s: 0 });
   const end = start.clone();
   end.add(M.getRandomArbitrary(0, 230), "m");
-  return { title: `Test ${el}`, start, end, diff: 0 };
+  return { title: `Test ${el}`, start, end, diff: 0, quarters: [] };
 });
 
 export const Basic = () => <Calendar events={events} title={"Calendar"} />;
