@@ -56,6 +56,28 @@ const CREATE_BUTTON_STYLE = {
   width: "120px",
 };
 
+const SIDER_STYLES: React.CSSProperties[] = [
+  {
+    width: "300px",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+  },
+  {
+    display: "flex",
+    justifyContent: "center",
+    padding: "20px",
+  },
+  { fontSize: "25px" },
+];
+
+const CREATE_BUTTON_INSIDE = (
+  <>
+    <PlusOutlined className="create-button" style={SIDER_STYLES[2]} />
+    <span>Create</span>
+  </>
+);
+
 const Sider = ({
   date,
   onChange,
@@ -75,39 +97,10 @@ const Sider = ({
         key={`${creating}`}
         createEvent={createEvent}
       />
-      <div
-        style={{
-          width: "300px",
-          padding: "20px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            padding: "20px",
-          }}
-        >
-          <Button
-            style={CREATE_BUTTON_STYLE}
-            onClick={() => {
-              setCreating(true);
-              // createEvent({
-              //   start: now,
-              //   end: now.clone().add(15, "m"),
-              //   title: "Event",
-              //   quarters: [],
-              //   diff: 0,
-              // });
-            }}
-          >
-            <PlusOutlined
-              className="create-button"
-              style={{ fontSize: "25px" }}
-            />
-            <span>Create</span>
+      <div style={SIDER_STYLES[0]}>
+        <div style={SIDER_STYLES[1]}>
+          <Button style={CREATE_BUTTON_STYLE} onClick={() => setCreating(true)}>
+            {CREATE_BUTTON_INSIDE}
           </Button>
         </div>
         <Calendar
@@ -119,6 +112,12 @@ const Sider = ({
       </div>
     </>
   );
+};
+
+const MODE_STYLE: React.CSSProperties = {
+  padding: "20px",
+  width: "calc(100% - 300px)",
+  overflowY: "scroll",
 };
 
 const Mode = ({
@@ -139,29 +138,28 @@ const Mode = ({
       }}
     >
       {Sider}
-      <div
-        style={{
-          padding: "20px",
-          width: "calc(100% - 300px)",
-          overflowY: "scroll",
-        }}
-      >
-        {Body}
-      </div>
+      <div style={MODE_STYLE}>{Body}</div>
     </div>
   );
 };
+
+const isSameDay = (a: Moment, b: Moment) => a.isSame(b, "day");
 
 export default ({
   title = "Calendar",
   events,
   createEvent,
+  onChange,
 }: {
   title?: string;
   events: Event[];
   createEvent: (ev: Event) => void;
+  onChange: (ev: Event) => void;
 }) => {
   const [windowSize, setWindowSize] = useState(DOM.viewport());
+  const [mode, setMode] = useState<CalendarModes>(CalendarModes.Day);
+  const [date, setDate] = useState<Moment>(moment());
+
   useEffect(() => {
     const list = () => {
       setWindowSize(DOM.viewport);
@@ -177,8 +175,102 @@ export default ({
   //   },
   //   [events]
   // );
-  const [mode, setMode] = useState<CalendarModes>(CalendarModes.Day);
-  const [date, setDate] = useState<Moment>(moment());
+  const modes = {
+    [CalendarModes.Day]: () => ({
+      Sider: (
+        <Sider
+          date={date}
+          onChange={(v: Moment) => {
+            setDate(v);
+          }}
+          createEvent={createEvent}
+        />
+      ),
+      Body: (
+        <Day
+          date={date}
+          events={events.filter((ev) => isSameDay(ev.start, date))}
+          createEvent={createEvent}
+          onChange={onChange}
+        />
+      ),
+    }),
+    [CalendarModes.Week]: () => ({
+      Sider: (
+        <Sider
+          date={date}
+          onChange={(v: Moment) => {
+            setDate(v);
+          }}
+          createEvent={createEvent}
+        />
+      ),
+      Body: (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: windowSize.width < 756 ? "column" : "row",
+          }}
+        >
+          {D.getWeek(date).map((d) => {
+            return (
+              <Day
+                date={d}
+                createEvent={() => {}}
+                events={events.filter((ev) => isSameDay(ev.start, d))}
+              />
+            );
+          })}
+        </div>
+      ),
+    }),
+    [CalendarModes.Month]: () => ({
+      Sider: (
+        <Sider
+          date={date}
+          onChange={(v: Moment) => {
+            setDate(v);
+          }}
+          createEvent={createEvent}
+        />
+      ),
+      Body: (
+        <div>
+          <Calendar
+            value={date}
+            onChange={(v) => setDate(v)}
+            headerRender={() => <div />}
+            dateCellRender={function (value) {
+              const list = events
+                .filter((ev) => isSameDay(ev.start, value))
+                .sort((a, b) => a.start.diff(b.start));
+              return (
+                <div className="month__events">
+                  {list.map((item: Event) => (
+                    <Badge
+                      status={"default"}
+                      text={` ${item.start.format("H:mm")} ${item.title}`}
+                    />
+                  ))}
+                </div>
+              );
+            }}
+          />
+        </div>
+      ),
+    }),
+    // [CalendarModes.Year]: {
+    //   Sider: (
+    //     <Sider
+    //       date={date}
+    //       onChange={(v: Moment) => {
+    //         setDate(v);
+    //       }}
+    //     />
+    //   ),
+    //   Body: <div />,
+    // },
+  };
   return (
     <Card
       title={title}
@@ -199,120 +291,7 @@ export default ({
       ]}
     >
       <div style={{ height: "calc(100% - 32px)" }}>
-        {
-          <Mode
-            windowSize={windowSize}
-            {...{
-              [CalendarModes.Day]: {
-                Sider: (
-                  <Sider
-                    date={date}
-                    onChange={(v: Moment) => {
-                      setDate(v);
-                    }}
-                    createEvent={createEvent}
-                  />
-                ),
-                Body: (
-                  <Day
-                    date={date}
-                    events={events.filter(
-                      (ev) =>
-                        ev.start.format("DD/MM/YYYY") ===
-                        date.format("DD/MM/YYYY")
-                    )}
-                    createEvent={createEvent}
-                  />
-                ),
-              },
-              [CalendarModes.Week]: {
-                Sider: (
-                  <Sider
-                    date={date}
-                    onChange={(v: Moment) => {
-                      setDate(v);
-                    }}
-                    createEvent={createEvent}
-                  />
-                ),
-                Body: (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: windowSize.width < 756 ? "column" : "row",
-                    }}
-                  >
-                    {D.getWeek(date).map((d) => {
-                      return (
-                        <Day
-                          date={d}
-                          createEvent={() => {}}
-                          events={events.filter(
-                            (ev) =>
-                              ev.start.format("DD/MM/YYYY") ===
-                              d.format("DD/MM/YYYY")
-                          )}
-                        />
-                      );
-                    })}
-                  </div>
-                ),
-              },
-              [CalendarModes.Month]: {
-                Sider: (
-                  <Sider
-                    date={date}
-                    onChange={(v: Moment) => {
-                      setDate(v);
-                    }}
-                    createEvent={createEvent}
-                  />
-                ),
-                Body: (
-                  <div>
-                    <Calendar
-                      value={date}
-                      onChange={(v) => setDate(v)}
-                      headerRender={() => <div />}
-                      dateCellRender={function (value) {
-                        const list = events
-                          .filter(
-                            (el) =>
-                              el.start.format("DD/MM/YYYY") ===
-                              value.format("DD/MM/YYYY")
-                          )
-                          .sort((a, b) => a.start.diff(b.start));
-                        return (
-                          <div className="month__events">
-                            {list.map((item: Event) => (
-                              <Badge
-                                status={"default"}
-                                text={` ${item.start.format("H:mm")} ${
-                                  item.title
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        );
-                      }}
-                    />
-                  </div>
-                ),
-              },
-              // [CalendarModes.Year]: {
-              //   Sider: (
-              //     <Sider
-              //       date={date}
-              //       onChange={(v: Moment) => {
-              //         setDate(v);
-              //       }}
-              //     />
-              //   ),
-              //   Body: <div />,
-              // },
-            }[mode]}
-          />
-        }
+        {<Mode windowSize={windowSize} {...modes[mode]()} />}
       </div>
     </Card>
   );

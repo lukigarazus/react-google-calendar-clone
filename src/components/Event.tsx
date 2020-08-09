@@ -3,12 +3,8 @@ import { Moment } from "moment";
 import { QUARTER_HEIGHT, LEFT } from "../constants";
 import ClickAway from "react-click-away-listener";
 import Draggable from "react-draggable";
-import { Event, TimePoint } from "../types";
-import {
-  getDiff,
-  getQuarterNumberFromStartToEnd,
-  updateEvent,
-} from "../util/event";
+import { Event } from "../types";
+import { getDiff, getQuarterNumberFromStartToEnd } from "../util/event";
 
 const RESIZE_BAR_STYLE: React.CSSProperties = {
   cursor: "ns-resize",
@@ -24,22 +20,24 @@ export default ({
   end: pEnd,
   left = 0,
   ev,
+  onChange = () => {},
   refreshParent,
-}: // data,
-// events,
-{
+}: {
   ev: Event;
   title: string;
   start: Moment;
   end: Moment;
   left?: number;
-  refreshParent: any;
-  // data: TimePoint[];
-  // events: Event[];
+  onChange?: (ev: Event) => void;
+  refreshParent: (v: Object) => void;
 }) => {
+  // State - start
   const [{ start, end }, setTime] = useState({ start: pStart, end: pEnd });
   const [focused, setFocused] = useState(false);
   const [resizing, setResizing] = useState(false);
+  // State - end
+
+  // Variables - start
   const fifteens = (start.hours() * 60 + start.minutes()) / 15;
   const { x, y } = {
     x: left * LEFT + 38,
@@ -47,12 +45,17 @@ export default ({
   };
   const diff = getDiff(start, end);
   const height = getQuarterNumberFromStartToEnd(diff) * QUARTER_HEIGHT;
+  // Variables - end
+
+  // Callbacks - start
   const onDrag = useCallback(
     (_, ui) => {
       const am = (ui.deltaY / QUARTER_HEIGHT) * 15;
+      const method = am > 0 ? "add" : "subtract";
+      const absolute = Math.abs(am);
       setTime({
-        start: start.clone()[am > 0 ? "add" : "subtract"](Math.abs(am), "m"),
-        end: end.clone()[am > 0 ? "add" : "subtract"](Math.abs(am), "m"),
+        start: start.clone()[method](absolute, "m"),
+        end: end.clone()[method](absolute, "m"),
       });
     },
     [start, end]
@@ -61,8 +64,10 @@ export default ({
     ev.start = start;
     ev.end = end;
     // updateEvent(ev, events, data);
+    onChange(ev);
     refreshParent({});
-  }, [start, end, refreshParent]);
+  }, [start, end, onChange, refreshParent]);
+  // Callbacks - end
   return (
     <ClickAway onClickAway={() => setFocused(false)}>
       <Draggable
@@ -109,7 +114,8 @@ export default ({
               setResizing(false);
               ev.end = end;
               // updateEvent(ev, events, data);
-              refreshParent();
+              onChange(ev);
+              refreshParent({});
             }}
             onDrag={(_, ui) => {
               const am = (ui.deltaY / QUARTER_HEIGHT) * 15;
