@@ -85,21 +85,27 @@ const Sider = ({
 }: {
   date: Moment;
   onChange: any;
-  createEvent: (ev: Event) => void;
+  createEvent?: (ev: Event) => void;
 }) => {
   const [creating, setCreating] = useState(false);
   return (
     <>
-      <CreateEventModal
-        visible={creating}
-        setVisible={setCreating}
-        date={date}
-        key={`${creating}`}
-        createEvent={createEvent}
-      />
+      {createEvent && (
+        <CreateEventModal
+          visible={creating}
+          setVisible={setCreating}
+          date={date}
+          key={`${creating}`}
+          createEvent={createEvent}
+        />
+      )}
       <div style={SIDER_STYLES[0]}>
         <div style={SIDER_STYLES[1]}>
-          <Button style={CREATE_BUTTON_STYLE} onClick={() => setCreating(true)}>
+          <Button
+            disabled={!createEvent}
+            style={CREATE_BUTTON_STYLE}
+            onClick={() => setCreating(true)}
+          >
             {CREATE_BUTTON_INSIDE}
           </Button>
         </div>
@@ -153,8 +159,8 @@ export default ({
 }: {
   title?: string;
   events: Event[];
-  createEvent: (ev: Event) => void;
-  onChange: (ev: Event) => void;
+  createEvent?: (ev: Event) => void;
+  onChange?: (ev: Event) => void;
 }) => {
   const [windowSize, setWindowSize] = useState(DOM.viewport());
   const [mode, setMode] = useState<CalendarModes>(CalendarModes.Day);

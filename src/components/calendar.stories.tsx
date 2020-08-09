@@ -22,13 +22,11 @@ const getEvents = () => {
   return events;
 };
 
-export const Basic = () => (
-  <Calendar createEvent={() => {}} events={getEvents()} title={"Calendar"} />
-);
+export const Basic = () => <Calendar events={getEvents()} title={"Calendar"} />;
 
 export const InContainer = () => (
   <div style={{ height: "600px" }}>
-    <Calendar events={getEvents()} title={"Calendar"} createEvent={() => {}} />
+    <Calendar events={getEvents()} title={"Calendar"} />
   </div>
 );
 
@@ -41,3 +39,11 @@ export const WithCreate = () => {
     />
   );
 };
+
+export const WithOnChange = () => (
+  <Calendar
+    onChange={(ev) => alert(JSON.stringify(ev) + " changed!")}
+    events={getEvents()}
+    title={"Calendar"}
+  />
+);

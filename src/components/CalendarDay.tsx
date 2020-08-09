@@ -16,7 +16,7 @@ const Quarter = ({
   qDate,
   index,
 }: {
-  createEvent: (ev: Event) => void;
+  createEvent?: (ev: Event) => void;
   qDate: Moment;
   index: number;
 }) => {
@@ -24,13 +24,14 @@ const Quarter = ({
     <div
       onClick={() => {
         const { start, end } = getStartAndEnd(qDate);
-        createEvent({
-          title: "Ev",
-          start,
-          end,
-          diff: Math.abs(start.diff(end)),
-          quarters: [],
-        });
+        createEvent &&
+          createEvent({
+            title: "Ev",
+            start,
+            end,
+            diff: Math.abs(start.diff(end)),
+            quarters: [],
+          });
       }}
       className="quarter"
       {...(index === 3 ? { style: { height: `${QUARTER_HEIGHT - 1}px` } } : {})}
@@ -46,7 +47,7 @@ export default ({
 }: {
   date: Moment;
   events: Event[];
-  createEvent: (ev: Event) => void;
+  createEvent?: (ev: Event) => void;
   onChange?: (ev: Event) => void;
 }) => {
   // @ts-ignore
